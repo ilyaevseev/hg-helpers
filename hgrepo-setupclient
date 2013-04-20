@@ -5,9 +5,11 @@
 F="$HOME/.hgrc"
 K="$HOME/.ssh/id_rsa"
 S="$HOME/.ssh/config"
+N="$(getent passwd $USER | awk -F: '{print $5;}')"
+test -z "$N" && $N="$USER"
 
 if test "$(id -u)" = "0"
-    then echo "Modify GLOBAL settings in /etc and $HOME..."; F="/etc/mercurial/hgrc"
+    then echo "Modify GLOBAL settings in /etc and $HOME..."; F="/etc/mercurial/hgrc"; N="$HN admin"
     else echo "Modify LOCAL settings in $HOME..."
 fi
 
@@ -33,7 +35,7 @@ if grep -q -- "^username" "$F"; then
 else
     echo "
 [ui]
-username = $HN admin <root@$HF>
+username = $N <$USER@$HF>
 " >> "$F"
 fi
 
