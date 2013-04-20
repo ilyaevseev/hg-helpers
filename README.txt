@@ -55,6 +55,10 @@ Usage roadmap
    Back to server side (fixup project permissions after first commit):
     - hgrepo-setuprepo proj1 client1
 
+Todo
+====
+Users with restricted read-only access? (at now, everybody can push)
+
 Disclaimer
 ==========
 Provided "as is" under terms of public domain.
