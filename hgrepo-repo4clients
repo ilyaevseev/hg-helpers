@@ -1,0 +1,20 @@
+#!/bin/sh
+#
+#  hgrepo-repo4clients -- part of hg-helpers
+#
+
+test -z "$1" -o -z "$2" && { echo "Usage: $0 repo users..."; exit 1; }
+
+R="$1"; shift
+
+for U in "$@"
+do
+    F="/home/repousers/$U/.ssh/authorized_keys"
+    test -f "$F" || { echo "$F not found, wrong repo?"; exit 1; }
+    grep -q -- " $R " "$F" || sed -ie "s, hg-ssh , hg-ssh $R ," "$F"
+
+    G="$(id -Gn $U | tr ' ' ,)"
+    usermod -G "$G,repo-$R" "$U" || exit 1
+done
+
+## EOF ##
