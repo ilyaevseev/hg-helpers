@@ -1,0 +1,24 @@
+#!/bin/sh
+#
+#  hgrepo-registeruser -- part of hg-helpers
+#
+#  Should be executed on server side,
+#    after running hgrepo-setupclient on client side, with printed arguments.
+#
+
+GROUP="repousers"
+UBASE="/home/repousers"
+RBASE="/home/repos"
+
+test $# = 4 || { echo "Usage: $0 <username> ssh-rsa <rsa-pubkey> <usermail>"; exit 1; }
+
+U="$1"; shift
+D="$UBASE/$U"
+K="$D/.ssh/authorized_keys"
+
+useradd -d "$D" -g "$GROUP" "$U"
+mkdir -pm700 $D/.ssh
+echo "command=\"cd $RBASE && hg-ssh \",no-port-forwarding,no-X11-forwarding,no-agent-forwarding,no-pty $@" > "$K"
+chown -R "$U" "$D"
+
+## EOF ##

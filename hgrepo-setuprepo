@@ -1,0 +1,31 @@
+#!/bin/sh
+#
+#  hgrepo-setuprepo -- part of hg-helpers.
+#
+#  Should be executed on server side TWICE:
+#  - first, for creating directory with new empty repository.
+#  - second, for setting permissions after filling repository by initial commit.
+#
+#
+
+test -z "$1" -o $# -gt 2 && { echo "Usage: $0 reponame [owner]"; exit 1; }
+
+G="repo-$1"
+O="${2:-root}:$G"
+D="/home/repos/$1"
+
+groupadd "$G"
+mkdir -pm770 "$D" || { echo "ERROR: Cannot create $D"; exit 1; }
+
+cd $D
+test -d .hg || hg init
+chmod g+w .hg .hg/* .hg/store/* 2>/dev/null || :
+chmod g+s .hg       .hg/store
+chown -R "$O" "$D"
+
+if test -e ".hg/store/data"
+    then chmod g+s .hg/store/data
+    else echo "IMPORTANT! Run me again after first commit!"
+fi
+
+## EOF ##

@@ -1,0 +1,63 @@
+#!/bin/sh
+
+## Constants ##
+
+F="$HOME/.hgrc"
+K="$HOME/.ssh/id_rsa"
+S="$HOME/.ssh/config"
+
+if test "$(id -u)" = "0"
+    then echo "Modify GLOBAL settings in /etc and $HOME..."; F="/etc/mercurial/hgrc"
+    else echo "Modify LOCAL settings in $HOME..."
+fi
+
+Die() { echo "ERROR: $*, stopped"; exit 1; }
+
+## Vars ##
+HF="$(hostname -f)"
+HN="$(hostname -s)"; test -n "$HN" || Die "Empty hostname"
+HD="$(hostname -d)"; test -n "$HD" || Die "Empty domain"
+HR="repo.$HD"
+ping -nq -w5 -c1 "$HR" > /dev/null 2>&1 || Die "$HR does not answer"
+
+## Code ##
+#-----------------------------------------------------------------------
+echo "STEP 1/4. Install Mercurial packages..."
+apt-get install -y mercurial
+
+#-----------------------------------------------------------------------
+echo "STEP 2/4. Create Mercurial username..."
+
+if grep -q -- "^username" "$F"; then
+    echo "Username already defined in $F, skipped."
+else
+    echo "
+[ui]
+username = $HN admin <root@$HF>
+" >> "$F"
+fi
+
+#-----------------------------------------------------------------------
+echo "STEP 3/4. Generate SSH key..."
+echo | ssh-keygen -q -t rsa -N "" -f $K
+echo
+
+#-----------------------------------------------------------------------
+echo "STEP 4/4. Add SSH link to repo host..."
+if grep -q -- "^Host repo$" "$S" 2>/dev/null; then
+    echo "Host repo already exists in $S, skipped."
+else
+    echo "
+Host repo
+	Hostname $HR
+	User $HN
+" >> "$S"
+fi
+
+#-----------------------------------------------------------------------
+echo "Done. Do this command on repo server $HR:"
+echo
+echo -n "hgrepo-registerclient $HN "
+cat "$K.pub"
+
+## EOF ##
