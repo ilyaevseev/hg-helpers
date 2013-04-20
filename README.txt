@@ -24,27 +24,36 @@ Usage roadmap
     - on DNS server  : create "repo" A-record
     - on repo server : hgrepo-setupserver
 
-2) Setup client hosts:
+2a) Setup client hosts:
     - on client host : hgrepo-setupclient         (user must be root!)
     - on repo server : hgrepo-registerclient ...
 
-3) Setup client users:
+2b) Setup client users:
     - on user side   : hgrepo-setupclient         (user must be non-root!)
     - on repo server : hgrepo-registerclient ...
 
-4) Setup projects:
+3) Setup projects:
     - on repo server : hgrepo-setuprepo <repo> [<owner>]   (owner is account on server, root by default)
 
-5) Add clients to projects:
+4) Add clients to projects:
     - on repo server : hgrepo-client2repos <client> <repo...>
     - on repo server : hgrepo-repo4clients <repo> <clients...>
     - on clients:    : hg clone ssh://repo/<repo> [<destdir>]
 
-6) Create new project on client and push to project:
+5) Create new project on client and push to repo server (includes steps 2,3,4):
+   On client side (install/configure Mercurial and generate SSH keys/config):
+    - hgrepo-setupclient
+   On server side (register client account and create repo directory+group):
+    - hgrepo-registerclient ...
+    - hgrepo-setuprepo proj1 client1
+    - hgrepo-repo4clients proj1 client1
+   Back to client side (do ordinal hg steps):
     - cd /path/to/proj1/
-    - hg init && hg add
-    - echo -e "\n[paths]\n default = ssh://repo/proj1" >> .hg/hgrc
+    - hg init && hg add && hg ci -m 'Initial commit.'
+    - echo -e "\n[paths]\ndefault = ssh://repo/$(basename $(pwd))" >> .hg/hgrc
     - hg push
+   Back to server side (fixup project permissions after first commit):
+    - hgrepo-setuprepo proj1 client1
 
 Disclaimer
 ==========
